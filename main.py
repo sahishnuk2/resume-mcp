@@ -1,5 +1,8 @@
+from db.models import create_db
+
 def main():
-    print("Hello from resume-mcp!")
+    create_db()
+    print("Connected to DB!")
 
 
 if __name__ == "__main__":
