@@ -1,6 +1,6 @@
 # for add, update, delete logic of projects, work exp, education...
 from datetime import datetime
-from db.models import Project, Work, engine
+from db.models import Project, Work, Skill, SavedResume, engine
 from sqlmodel import Session, select
 
 # Projects
@@ -126,3 +126,79 @@ def update_work(company: str,
 
     except Exception as e:
         raise ValueError("Failed to update work experience: " + str(e))
+
+# Skills
+def add_skill(name: str, category: str):
+    try:
+        skill = Skill(name=name, category=category)
+        with Session(engine) as session:
+            session.add(skill)
+            session.commit()
+    except Exception as e:
+        raise ValueError("Failed to add skill: " + str(e))
+
+def delete_skill(name: str):
+    try:
+        with Session(engine) as session:
+            statement = select(Skill).where(Skill.name == name)
+            skill = session.exec(statement).first()
+            if not skill:
+                raise ValueError("Skill not found in database")
+            session.delete(skill)
+            session.commit()
+    except Exception as e:
+        raise ValueError("Failed to delete skill: " + str(e))
+
+def update_skill(name: str, category: str | None = None):
+    try:
+        with Session(engine) as session:
+            statement = select(Skill).where(Skill.name == name)
+            skill = session.exec(statement).first()
+            if not skill:
+                raise ValueError("Skill not found in database")
+            if category:
+                skill.category = category
+            session.add(skill)
+            session.commit()
+            session.refresh(skill)
+    except Exception as e:
+        raise ValueError("Failed to update skill: " + str(e))
+
+# Education
+
+# Saved Resume
+def add_saved_resume(version_name: str, content: str):
+    try:
+        resume = SavedResume(version_name=version_name, content=content)
+        with Session(engine) as session:
+            session.add(resume)
+            session.commit()
+    except Exception as e:
+        raise ValueError("Failed to add saved resume: " + str(e))
+
+def delete_saved_resume(version_name: str):
+    try:
+        with Session(engine) as session:
+            statement = select(SavedResume).where(SavedResume.version_name == version_name)
+            resume = session.exec(statement).first()
+            if not resume:
+                raise ValueError("Saved resume not found in database")
+            session.delete(resume)
+            session.commit()
+    except Exception as e:
+        raise ValueError("Failed to delete saved resume: " + str(e))
+
+def update_saved_resume(version_name: str, content: str | None = None):
+    try:
+        with Session(engine) as session:
+            statement = select(SavedResume).where(SavedResume.version_name == version_name)
+            resume = session.exec(statement).first()
+            if not resume:
+                raise ValueError("Saved resume not found in database")
+            if content:
+                resume.content = content
+            session.add(resume)
+            session.commit()
+            session.refresh(resume)
+    except Exception as e:
+        raise ValueError("Failed to update saved resume: " + str(e))

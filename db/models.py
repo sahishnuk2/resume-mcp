@@ -23,7 +23,7 @@ class Project(SQLModel, table=True):
 
 class Work(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
-    company: str = Field(max_length=100, unique=True)
+    company: str = Field(max_length=100, unique=True) # Note: Company may not be unique in the future
     role: str = Field(max_length=100)
     description: str = Field()
     start_date: date = Field()
@@ -31,7 +31,7 @@ class Work(SQLModel, table=True):
 
 class Skill(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
-    name: str = Field(max_length=100)
+    name: str = Field(max_length=100, unique=True)
     category: str = Field(max_length=100)
     
 
@@ -56,7 +56,7 @@ class RelevantCourse(SQLModel, table=True):
 
 class SavedResume(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
-    version_name: str = Field(max_length=100)
+    version_name: str = Field(max_length=100, unique=True)
     content: str
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
