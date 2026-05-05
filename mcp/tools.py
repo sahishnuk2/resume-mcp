@@ -1,6 +1,6 @@
 from fastmcp import FastMCP
 from pydantic import BaseModel
-from services.resume_service import add_project, delete_project, update_project
+from services.resume_service import add_project, delete_project, update_project, add_work, delete_work, update_work
 
 mcp = FastMCP("Resume-MCP-Server")
 
@@ -18,6 +18,20 @@ class ProjectUpdate(BaseModel):
     tech_stack: str | None = None
     link: str | None = None
     start_date: str | None = None # format: "Mon YYYY" e.g. "Sep 2025"
+    end_date: str | None = None # format: "Mon YYYY" e.g. "Sep 2025"
+
+class WorkInput(BaseModel):
+    company: str
+    role: str
+    description: str
+    start_date: str # format: "Mon YYYY" e.g. "Sep 2025"
+    end_date: str | None = None # format: "Mon YYYY" e.g. "Sep 2025"
+
+class WorkUpdate(BaseModel):
+    company: str
+    role: str | None = None
+    description: str | None = None
+    start_date: str # format: "Mon YYYY" e.g. "Sep 2025"
     end_date: str | None = None # format: "Mon YYYY" e.g. "Sep 2025"
 
 @mcp.tool()
@@ -41,6 +55,31 @@ def modify_project(action: str, project: ProjectInput | None = None, update: Pro
             update_project(**update.model_dump())
         else:
             return "Action must be 'add', 'delete' or 'update' only'"
-        return "Projects tables updated"
+        return "Project tables updated"
+    except Exception as e:
+        return "Error: " + str(e)
+    
+@mcp.tool()
+def modify_work(action: str, work: WorkInput | None = None, update: WorkUpdate | None = None) -> str:
+    """
+    Modify a work experience entry in the resume database.
+
+    Actions:
+    - "add": Add a new work experience. Requires 'work' with company, role, description, start_date. Optional: end_date.
+    - "update": Update an existing work experience. Requires 'update' with company to identify work experience. Only pass fields to change.
+    - "delete": Delete a work experience. Requires 'work' with company only.
+
+    Dates must be in format "Mon YYYY" e.g. "Sep 2025"
+    """
+    try:
+        if action == "add":
+            add_work(**work.model_dump())
+        elif action == "delete":
+            delete_work(work.company)
+        elif action == "update":
+            update_work(**update.model_dump())
+        else:
+            return "Action must be 'add', 'delete' or 'update' only'"
+        return "Work tables updated"
     except Exception as e:
         return "Error: " + str(e)

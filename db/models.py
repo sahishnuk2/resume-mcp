@@ -23,7 +23,7 @@ class Project(SQLModel, table=True):
 
 class Work(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
-    company: str = Field(max_length=100)
+    company: str = Field(max_length=100, unique=True)
     role: str = Field(max_length=100)
     description: str = Field()
     start_date: date = Field()
