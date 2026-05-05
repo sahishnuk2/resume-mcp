@@ -14,7 +14,7 @@ engine = create_engine(POSTGRESQL_URL)
 
 class Project(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
-    name: str = Field(max_length=100)
+    name: str = Field(max_length=100, unique=True)
     description: str = Field()
     tech_stack: str = Field(max_length=200)
     link: str | None = Field(default=None, max_length=200)
