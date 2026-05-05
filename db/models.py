@@ -41,7 +41,8 @@ class Education(SQLModel, table=True):
     degree: str = Field(max_length=100)
     field: str = Field(max_length=100)
     minor: str | None = Field(default=None, max_length=100)
-    end_date: date
+    start_date: date = Field()
+    end_date: date | None = Field(default=None)
 
 class EducationAchievement(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)

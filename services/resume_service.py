@@ -1,6 +1,6 @@
 # for add, update, delete logic of projects, work exp, education...
 from datetime import datetime
-from db.models import Project, Work, Skill, SavedResume, engine
+from db.models import Project, Work, Skill, SavedResume, Education, EducationAchievement, RelevantCourse, engine
 from sqlmodel import Session, select
 
 # Projects
@@ -165,6 +165,114 @@ def update_skill(name: str, category: str | None = None):
         raise ValueError("Failed to update skill: " + str(e))
 
 # Education
+def update_education(institution: str | None = None,
+                     degree: str | None = None,
+                     field: str | None = None,
+                     minor: str | None = None,
+                     start_date: str | None = None,
+                     end_date: str | None = None
+                     ):
+    try:
+        with Session(engine) as session:
+            education = session.exec(select(Education)).first()
+            if not education:
+                raise ValueError("Education not found in database")
+            if institution:
+                education.institution = institution
+            if degree:
+                education.degree = degree
+            if field:
+                education.field = field
+            if minor:
+                education.minor = minor
+            if start_date:
+                education.end_date = datetime.strptime(start_date, "%b %Y").date()
+            if end_date:
+                education.end_date = datetime.strptime(end_date, "%b %Y").date()
+            session.add(education)
+            session.commit()
+            session.refresh(education)
+    except Exception as e:
+        raise ValueError("Failed to update education: " + str(e))
+
+# Education Achievement
+def add_education_achievement(achievement: str):
+    try:
+        with Session(engine) as session:
+            education = session.exec(select(Education)).first()
+            if not education:
+                raise ValueError("Education not found in database")
+            edu_achievement = EducationAchievement(education_id=education.id, achievement=achievement)
+            session.add(edu_achievement)
+            session.commit()
+    except Exception as e:
+        raise ValueError("Failed to add education achievement: " + str(e))
+
+def delete_education_achievement(achievement: str):
+    try:
+        with Session(engine) as session:
+            statement = select(EducationAchievement).where(EducationAchievement.achievement == achievement)
+            edu_achievement = session.exec(statement).first()
+            if not edu_achievement:
+                raise ValueError("Education achievement not found in database")
+            session.delete(edu_achievement)
+            session.commit()
+    except Exception as e:
+        raise ValueError("Failed to delete education achievement: " + str(e))
+
+def update_education_achievement(achievement: str, new_achievement: str):
+    try:
+        with Session(engine) as session:
+            statement = select(EducationAchievement).where(EducationAchievement.achievement == achievement)
+            edu_achievement = session.exec(statement).first()
+            if not edu_achievement:
+                raise ValueError("Education achievement not found in database")
+            edu_achievement.achievement = new_achievement
+            session.add(edu_achievement)
+            session.commit()
+            session.refresh(edu_achievement)
+    except Exception as e:
+        raise ValueError("Failed to update education achievement: " + str(e))
+
+# Relevant Courses
+def add_relevant_course(course_name: str, grade: str):
+    try:
+        with Session(engine) as session:
+            education = session.exec(select(Education)).first()
+            if not education:
+                raise ValueError("Education not found in database")
+            course = RelevantCourse(education_id=education.id, course_name=course_name, grade=grade)
+            session.add(course)
+            session.commit()
+    except Exception as e:
+        raise ValueError("Failed to add relevant course: " + str(e))
+
+def delete_relevant_course(course_name: str):
+    try:
+        with Session(engine) as session:
+            statement = select(RelevantCourse).where(RelevantCourse.course_name == course_name)
+            course = session.exec(statement).first()
+            if not course:
+                raise ValueError("Relevant course not found in database")
+            session.delete(course)
+            session.commit()
+    except Exception as e:
+        raise ValueError("Failed to delete relevant course: " + str(e))
+
+def update_relevant_course(course_name: str, grade: str | None = None):
+    try:
+        with Session(engine) as session:
+            statement = select(RelevantCourse).where(RelevantCourse.course_name == course_name)
+            course = session.exec(statement).first()
+            if not course:
+                raise ValueError("Relevant course not found in database")
+            if grade:
+                course.grade = grade
+            session.add(course)
+            session.commit()
+            session.refresh(course)
+    except Exception as e:
+        raise ValueError("Failed to update relevant course: " + str(e))
 
 # Saved Resume
 def add_saved_resume(version_name: str, content: str):
@@ -202,3 +310,26 @@ def update_saved_resume(version_name: str, content: str | None = None):
             session.refresh(resume)
     except Exception as e:
         raise ValueError("Failed to update saved resume: " + str(e))
+
+# Get all data
+def get_all_data():
+    try:
+        with Session(engine) as session:
+            projects = session.exec(select(Project)).all()
+            works = session.exec(select(Work)).all()
+            skills = session.exec(select(Skill)).all()
+            education = session.exec(select(Education)).all()
+            eduachievements = session.exec(select(EducationAchievement)).all()
+            rcourses = session.exec(select(RelevantCourse)).all()
+
+            return {
+                "projects": [p.model_dump() for p in projects],
+                "work": [w.model_dump() for w in works],
+                "skills": [s.model_dump() for s in skills],
+                "education": [e.model_dump() for e in education],
+                "education_achievements": [ea.model_dump() for ea in eduachievements],
+                "relevant_courses": [rc.model_dump() for rc in rcourses]
+            }
+
+    except Exception as e:
+        raise ValueError("Database Error: " + str(e))
