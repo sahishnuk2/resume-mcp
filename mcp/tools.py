@@ -54,7 +54,7 @@ def modify_project(action: str, project: ProjectInput | None = None, update: Pro
         elif action == "update":
             update_project(**update.model_dump())
         else:
-            return "Action must be 'add', 'delete' or 'update' only'"
+            return "Action must be 'add', 'delete' or 'update' only"
         return "Project tables updated"
     except Exception as e:
         return "Error: " + str(e)
@@ -79,7 +79,7 @@ def modify_work(action: str, work: WorkInput | None = None, update: WorkUpdate |
         elif action == "update":
             update_work(**update.model_dump())
         else:
-            return "Action must be 'add', 'delete' or 'update' only'"
+            return "Action must be 'add', 'delete' or 'update' only"
         return "Work tables updated"
     except Exception as e:
         return "Error: " + str(e)
