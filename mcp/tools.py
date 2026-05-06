@@ -1,7 +1,10 @@
+import os
+import subprocess
+
 from fastmcp import FastMCP
 from pydantic import BaseModel
 from services.resume_service import (
-    add_project, delete_project, get_all_data, update_project,
+    add_project, delete_project, get_all_data, get_resume, update_project,
     add_work, delete_work, update_work,
     add_skill, delete_skill, update_skill,
     update_education,
@@ -238,5 +241,22 @@ def modify_saved_resume(action: str, resume: SavedResumeInput | None = None, upd
 def get_resume_data():
     try:
         return get_all_data()
+    except Exception as e:
+        return "Error: " + str(e)
+    
+@mcp.tool()
+def compile_resume(version_name: str):
+    """Compile a saved LaTeX resume to PDF given the version name."""
+    try:
+        content = get_resume(version_name)
+        output_dir = f"/Users/sahishnukumaar/Desktop/NUS-Study-Materials/Resume/{version_name}"
+        os.makedirs(output_dir, exist_ok=True)
+        
+        tex_path = f"{output_dir}/{version_name}.tex"
+        with open(tex_path, "w") as f:
+            f.write(content)
+        
+        subprocess.run(["pdflatex", "-output-directory", output_dir, tex_path])
+        return f"PDF saved to {output_dir}/{version_name}.pdf"
     except Exception as e:
         return "Error: " + str(e)

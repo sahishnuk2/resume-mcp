@@ -333,3 +333,16 @@ def get_all_data():
 
     except Exception as e:
         raise ValueError("Database Error: " + str(e))
+
+# Resumes
+def get_resumes():
+    with Session(engine) as session:
+        statement = select(SavedResume.version_name)
+        resumes = session.exec(statement).all()
+        return resumes
+
+def get_resume(version_name: str):
+    with Session(engine) as session:
+        statement = select(SavedResume).where(SavedResume.version_name == version_name)
+        resume = session.exec(statement).first()
+        return resume.content
