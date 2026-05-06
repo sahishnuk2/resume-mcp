@@ -10,7 +10,8 @@ from services.resume_service import (
     update_education,
     add_education_achievement, delete_education_achievement, update_education_achievement,
     add_relevant_course, delete_relevant_course, update_relevant_course,
-    add_saved_resume, delete_saved_resume, update_saved_resume
+    add_saved_resume, delete_saved_resume, update_saved_resume,
+    update_personal
 )
 
 mcp = FastMCP("Resume-MCP-Server")
@@ -237,6 +238,26 @@ def modify_saved_resume(action: str, resume: SavedResumeInput | None = None, upd
     except Exception as e:
         return "Error: " + str(e)
     
+class PersonalInfoUpdate(BaseModel):
+    name: str | None = None
+    phone: str | None = None
+    email: str | None = None
+    website: str | None = None
+    github: str | None = None
+    linkedin: str | None = None
+
+@mcp.tool()
+def modify_personal_info(update: PersonalInfoUpdate) -> str:
+    """
+    Update the single personal info entry in the resume database.
+    Only pass fields to change.
+    """
+    try:
+        update_personal(**update.model_dump())
+        return "Personal info updated"
+    except Exception as e:
+        return "Error: " + str(e)
+
 @mcp.resource("resume://data")
 def get_resume_data():
     try:
@@ -260,3 +281,30 @@ def compile_resume(version_name: str):
         return f"PDF saved to {output_dir}/{version_name}.pdf"
     except Exception as e:
         return "Error: " + str(e)
+
+@mcp.prompt()
+def generate_resume_prompt(job_description: str) -> str:
+    return f"""
+    You are a professional resume writer.
+    
+    Follow these steps:
+    1. Read all resume data using the resume://data resource
+    2. Analyse this job description:
+    {job_description}
+    3. Select the most relevant projects and work experiences for this role
+    4. Rewrite bullet points with impact and metrics
+    5. Do NOT fabricate or exaggerate metrics — only use real information from the resume data
+    6. Keep the resume to one page worth of content
+    7. Format the final resume as a complete compilable LaTeX document with:
+        - Use article documentclass with 11pt font
+        - Margins: 0.5in all sides
+        - Sections in order: Personal Info, Education, Skills, Projects, Work Experience
+        - Use itemize for bullet points
+        - Bold company/project names
+        - Right align dates
+        - If end_date is None, display as "Present"
+        - Display URLs without https:// e.g. www.sahishnu.dev
+    8. Output ONLY the LaTeX code, no explanation
+    9. Ask the user for a version name, then save using modify_saved_resume() with action "add"
+    10. If user saves, ask if they want to compile it to PDF using compile_resume() with the same version name
+    """

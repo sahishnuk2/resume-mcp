@@ -61,6 +61,15 @@ class SavedResume(SQLModel, table=True):
     content: str
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+class PersonalInfo(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    name: str
+    phone: str
+    email: str
+    website: str | None
+    github: str | None
+    linkedin: str | None
+
 def create_db():
     SQLModel.metadata.create_all(engine)
 

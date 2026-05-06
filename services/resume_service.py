@@ -1,6 +1,6 @@
 # for add, update, delete logic of projects, work exp, education...
 from datetime import datetime
-from db.models import Project, Work, Skill, SavedResume, Education, EducationAchievement, RelevantCourse, engine
+from db.models import PersonalInfo, Project, Work, Skill, SavedResume, Education, EducationAchievement, RelevantCourse, engine
 from sqlmodel import Session, select
 
 # Projects
@@ -321,8 +321,10 @@ def get_all_data():
             education = session.exec(select(Education)).all()
             eduachievements = session.exec(select(EducationAchievement)).all()
             rcourses = session.exec(select(RelevantCourse)).all()
+            personal_info = session.exec(select(PersonalInfo)).first()
 
             return {
+                "personal_info": personal_info.model_dump() if personal_info else None,
                 "projects": [p.model_dump() for p in projects],
                 "work": [w.model_dump() for w in works],
                 "skills": [s.model_dump() for s in skills],
@@ -333,6 +335,37 @@ def get_all_data():
 
     except Exception as e:
         raise ValueError("Database Error: " + str(e))
+
+# Peronal Info
+def update_personal(name: str | None = None,
+                     phone: str | None = None,
+                     email: str | None = None,
+                     website: str | None = None,
+                     github: str | None = None,
+                     linkedin: str | None = None
+                     ):
+    try:
+        with Session(engine) as session:
+            info = session.exec(select(PersonalInfo)).first()
+            if not info:
+                raise ValueError("Personal Information not found in database")
+            if name:
+                info.name = name
+            if phone:
+                info.phone = phone
+            if email:
+                info.email = email
+            if website:
+                info.website = website
+            if github:
+                info.github = github
+            if linkedin:
+                info.linkedin = linkedin
+            session.add(info)
+            session.commit()
+            session.refresh(info)
+    except Exception as e:
+        raise ValueError("Failed to update personal information: " + str(e))
 
 # Resumes
 def get_resumes():
