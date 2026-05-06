@@ -1,6 +1,7 @@
 import json
 import os
 import subprocess
+from datetime import date
 from fastmcp import FastMCP
 from pydantic import BaseModel
 from services.resume_service import (
@@ -258,10 +259,16 @@ def modify_personal_info(update: PersonalInfoUpdate) -> str:
     except Exception as e:
         return "Error: " + str(e)
 
-@mcp.resource("resume://data")
+@mcp.tool()
 def get_resume_data():
+    """Fetch all resume data from the database including projects, work experience, skills and education."""
     try:
-        return json.dumps(get_all_data())
+        def serialize(obj):
+            if isinstance(obj, date):
+                return obj.strftime("%b %Y")
+            raise TypeError(f"Type {type(obj)} not serializable")
+        
+        return json.dumps(get_all_data(), default=serialize)
     except Exception as e:
         return "Error: " + str(e)
     
@@ -277,34 +284,51 @@ def compile_resume(version_name: str):
         with open(tex_path, "w") as f:
             f.write(content)
         
-        subprocess.run(["pdflatex", "-output-directory", output_dir, tex_path])
+        # subprocess.run(["pdflatex", "-output-directory", output_dir, tex_path])
+        subprocess.run(
+            ["pdflatex", "-output-directory", output_dir, tex_path],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL
+        )
         return f"PDF saved to {output_dir}/{version_name}.pdf"
     except Exception as e:
         return "Error: " + str(e)
 
-@mcp.prompt()
-def generate_resume_prompt(job_description: str) -> str:
-    return f"""
-    You are a professional resume writer.
+@mcp.tool()
+def generate_resume(job_description: str | None) -> str:
+    """
+    Generate a tailored LaTeX resume for the given job description.
     
-    Follow these steps:
-    1. Read all resume data using the resume://data resource
-    2. Analyse this job description:
+    STRICT RULES:
+    - Output ONLY valid compilable LaTeX code, nothing else
+    - No markdown, no explanation, just LaTeX
+    - Do NOT fake or exaggerate metrics
+    - If end_date is None, display as Present
+    
+    PERSONAL INFO HEADER:
+    - Show ONLY: name, phone, email, website, github
+    - Do NOT include LinkedIn
+    - Website must show as www.sahishnu.dev (not sahishnu.dev, not https://www.sahishnu.dev)
+    - All contact details must be clickable hyperlinks using \\href{}{}
+    
+    SECTIONS ORDER:
+    Personal Info → Education → Skills → Projects → Work Experience
+    
+    FORMATTING:
+    - article documentclass, 11pt font, 0.5in margins
+    - Bold company/project names, right align dates
+    - Keep to one page
+    
+    After generating, ask user for a version name and save via modify_saved_resume() action add.
+    Then ask if they want to compile via compile_resume().
+    """
+    data = get_resume_data()
+    return f"""
+    Here is my resume data:
+    {data}
+    
+    Job Description:
     {job_description}
-    3. Select the most relevant projects and work experiences for this role
-    4. Rewrite bullet points with impact and metrics
-    5. Do NOT fabricate or exaggerate metrics — only use real information from the resume data
-    6. Keep the resume to one page worth of content
-    7. Format the final resume as a complete compilable LaTeX document with:
-        - Use article documentclass with 11pt font
-        - Margins: 0.5in all sides
-        - Sections in order: Personal Info, Education, Skills, Projects, Work Experience
-        - Use itemize for bullet points
-        - Bold company/project names
-        - Right align dates
-        - If end_date is None, display as "Present"
-        - Display URLs without https:// e.g. www.sahishnu.dev
-    8. Output ONLY the LaTeX code, no explanation
-    9. Ask the user for a version name, then save using modify_saved_resume() with action "add"
-    10. If user saves, ask if they want to compile it to PDF using compile_resume() with the same version name
+    
+    Please generate a tailored LaTeX resume following the instructions in the tool description.
     """
