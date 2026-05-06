@@ -1,5 +1,5 @@
 from db.models import create_db
-from mcp.tools import mcp
+from mcp_server.tools import mcp
 
 def main():
     create_db()

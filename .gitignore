@@ -11,3 +11,6 @@ wheels/
 
 # Env file
 .env
+
+# Seed for database
+db/seed.py

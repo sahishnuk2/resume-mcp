@@ -235,7 +235,7 @@ def update_education_achievement(achievement: str, new_achievement: str):
         raise ValueError("Failed to update education achievement: " + str(e))
 
 # Relevant Courses
-def add_relevant_course(course_name: str, grade: str):
+def add_relevant_course(course_name: str, grade: str | None):
     try:
         with Session(engine) as session:
             education = session.exec(select(Education)).first()

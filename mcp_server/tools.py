@@ -1,6 +1,6 @@
+import json
 import os
 import subprocess
-
 from fastmcp import FastMCP
 from pydantic import BaseModel
 from services.resume_service import (
@@ -261,7 +261,7 @@ def modify_personal_info(update: PersonalInfoUpdate) -> str:
 @mcp.resource("resume://data")
 def get_resume_data():
     try:
-        return get_all_data()
+        return json.dumps(get_all_data())
     except Exception as e:
         return "Error: " + str(e)
     

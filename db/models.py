@@ -53,7 +53,7 @@ class RelevantCourse(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     education_id: int = Field(foreign_key="education.id")
     course_name: str = Field(max_length=100)
-    grade: str = Field(max_length=5)
+    grade: str | None = Field(default=None, max_length=5)
 
 class SavedResume(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
