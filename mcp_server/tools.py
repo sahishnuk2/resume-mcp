@@ -277,7 +277,7 @@ def compile_resume(version_name: str):
     """Compile a saved LaTeX resume to PDF given the version name."""
     try:
         content = get_resume(version_name)
-        output_dir = f"/Users/sahishnukumaar/Desktop/NUS-Study-Materials/Resume/{version_name}"
+        output_dir = os.path.join(os.getenv("OUTPUT_DIR", "/output"), version_name)
         os.makedirs(output_dir, exist_ok=True)
         
         tex_path = f"{output_dir}/{version_name}.tex"
