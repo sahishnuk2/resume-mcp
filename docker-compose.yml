@@ -17,5 +17,11 @@ services:
       - db
     env_file:
       - .env
+    ports:
+      - "8000:8000"
+    environment:
+      OUTPUT_DIR: /output
+    volumes:
+      - /Users/sahishnukumaar/Desktop/NUS-Study-Materials/Resume:/output
 volumes:
   postgres_data:
