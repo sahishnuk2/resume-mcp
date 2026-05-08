@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: resume-mcp
+  labels:
+    app: resume-mcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: resume-mcp
+  template:
+    metadata:
+      labels:
+        app: resume-mcp
+    spec:
+      containers:
+        - name: resume-mcp
+          image: resume-mcp-app:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8000
+          env:
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: password
+            - name: POSTGRESQL_URL
+              value: postgresql://sahishnukumaar:$(DB_PASSWORD)@postgres:5432/resume_db
+            - name: OUTPUT_DIR
+              value: /output
+          volumeMounts:
+            - name: output
+              mountPath: /output
+      volumes:
+        - name: output
+          hostPath:
+            path: /output

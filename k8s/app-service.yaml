@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: resume-mcp
+spec:
+  selector:
+    app: resume-mcp
+  ports:
+    - port: 8000
+      targetPort: 8000
+  type: NodePort
