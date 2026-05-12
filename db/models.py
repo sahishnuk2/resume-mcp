@@ -43,6 +43,7 @@ class Education(SQLModel, table=True):
     minor: str | None = Field(default=None, max_length=100)
     start_date: date = Field()
     end_date: date | None = Field(default=None)
+    gpa: float | None = Field()
 
 class EducationAchievement(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)

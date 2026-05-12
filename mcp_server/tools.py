@@ -134,6 +134,7 @@ class EducationUpdate(BaseModel):
     field: str | None = None
     minor: str | None = None
     end_date: str | None = None # format: "Mon YYYY" e.g. "Sep 2025"
+    gpa: str | None = None
 
 @mcp.tool()
 def modify_education(update: EducationUpdate) -> str:
