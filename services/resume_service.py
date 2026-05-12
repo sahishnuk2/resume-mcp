@@ -170,7 +170,8 @@ def update_education(institution: str | None = None,
                      field: str | None = None,
                      minor: str | None = None,
                      start_date: str | None = None,
-                     end_date: str | None = None
+                     end_date: str | None = None,
+                     gpa: str | None = None
                      ):
     try:
         with Session(engine) as session:
@@ -185,6 +186,8 @@ def update_education(institution: str | None = None,
                 education.field = field
             if minor:
                 education.minor = minor
+            if gpa:
+                education.gpa = float(gpa)
             if start_date:
                 education.end_date = datetime.strptime(start_date, "%b %Y").date()
             if end_date:
